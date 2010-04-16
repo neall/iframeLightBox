@@ -42,7 +42,12 @@ var lightBoxLinks = function lightBoxLinks(classname){
     iframeContainer.style.bottom = 0;
     iframeContainer.style.left = 0;
     iframeContainer.style.right = 0;
-    iframeContainer.style.background = 'rgba(0,0,0,0.3)';
+    try {
+	iframeContainer.style.background = 'rgba(0,0,0,0.3)';
+    } catch (err) {
+	// IE doesn't support rgba
+	iframeContainer.style.background = 'url(dither.gif)';
+    }
     iframeContainer.onclick = hideLightBox;
     var iframe = document.createElement('iframe');
     iframe.style.border = 'solid 3px #ddd';
