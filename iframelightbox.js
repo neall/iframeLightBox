@@ -9,9 +9,10 @@ var lightBoxLinks = function lightBoxLinks(classname){
 	return false;
     }
 
-    var getElementsByClass = function getElementsByClass(classname) {
+    var getElementsByClass = function getElementsByClass(classname, tagname) {
+	tagname = (tagname ? tagname : '*');
 	var parentNode = ((this === window) ? document : this);
-	var allElements = parentNode.getElementsByTagName('*');
+	var allElements = parentNode.getElementsByTagName(tagname);
 	var elements = [];
 	var elementClasses;
 	for (var i = 0; i < allElements.length; i++) {
@@ -23,7 +24,7 @@ var lightBoxLinks = function lightBoxLinks(classname){
 	return elements;
     }
 
-    var lightBoxAnchors = getElementsByClass(classname);
+    var lightBoxAnchors = getElementsByClass(classname, 'a');
     var body = document.getElementsByTagName('body')[0];
     var fragment = document.createDocumentFragment();
     var iframeContainer = document.createElement('div');
@@ -68,7 +69,6 @@ var lightBoxLinks = function lightBoxLinks(classname){
     }
 
     for (var i = 0; i < lightBoxAnchors.length; i++) {
-	lightBoxAnchors[i].style.background = 'red';
 	lightBoxAnchors[i].onclick = linkHandler;
     }
 }
