@@ -1,9 +1,29 @@
-var lightBoxLinks = function lightBoxLinks(classname){
+var lightBoxLinks = function lightBoxLinks(userOptions){
 
-    var arrayContains = function arrayContains(value) {
+    // set options
+    var options = {
+	classname: 'lightbox',
+	preload: true
+    };
+    if (typeof userOptions == 'string') {
+	options.classname = userOptions;
+    } else {
+	for (var key in userOptions) {
+	    if (userOptions.hasOwnProperty(key)) {
+		options[key] = userOptions[key];
+	    }
+	}
+    }
+
+    var softEquality = function softEquality(val1, val2) {
+	return (val1 == val2);
+    }
+
+    var arrayContains = function arrayContains(value, test) {
+	test = ((typeof test == 'function') ? test : softEquality);
 	for (var i = 0; i < this.length; i++) {
-	    if (this[i] == value) {
-		return true;
+	    if (test(value, this[i])) {
+		return (this[i] ? this[i] : true);
 	    }
 	}
 	return false;
@@ -23,52 +43,76 @@ var lightBoxLinks = function lightBoxLinks(classname){
 	}
 	return elements;
     }
+    
+    var stripClasses = function stripClasses(collection) {
+	for (var i = 0; i < collection.length; i++) {
+	    collection[i].className = '';
+	}
+    }
 
-    var lightBoxAnchors = getElementsByClass(classname, 'a');
-    var body = document.getElementsByTagName('body')[0];
-    var fragment = document.createDocumentFragment();
-    var iframeContainer = document.createElement('div');
-
+    var lightBoxAnchors, lightBoxContainer, frameTabs;
+    
     var showLightBox = function showLightbox() {
-	iframeContainer.style.display = 'block';
+	lightBoxContainer.style.display = 'block';
     }
-
+    
     var hideLightBox = function hideLightbox() {
-	iframeContainer.style.display = 'none';
+	lightBoxContainer.style.display = 'none';
     }
 
-    iframeContainer.style.display = 'none';
-    iframeContainer.style.position = 'fixed';
-    iframeContainer.style.top = 0;
-    iframeContainer.style.bottom = 0;
-    iframeContainer.style.left = 0;
-    iframeContainer.style.right = 0;
-    try {
-	iframeContainer.style.background = 'rgba(0,0,0,0.3)';
-    } catch (err) {
-	// IE doesn't support rgba
-	iframeContainer.style.background = 'url(dither.gif)';
-    }
-    iframeContainer.onclick = hideLightBox;
-    var iframe = document.createElement('iframe');
-    iframe.style.border = 'solid 3px #ddd';
-    iframe.style.position = 'fixed';
-    iframe.style.top = '15%';
-    iframe.style.left = '15%';
-    iframe.style.width = '70%';
-    iframe.style.height = '70%';
-    iframe.style.background = 'white';
-    fragment.appendChild(iframeContainer);
-    iframeContainer.appendChild(iframe);
-    body.appendChild(fragment);
+    lightBoxContainer = document.createElement('div');
+    lightBoxContainer.className = 'iframelightbox';
+    lightBoxContainer.onclick = hideLightBox;
+    lightBoxContainer.style.display = 'none'; // <- won't need this after I update CSS
+    var lightBoxWindow = document.createElement('div');
+    lightBoxWindow.className = 'iframelightbox_window';
+    lightBoxContainer.appendChild(lightBoxWindow);
+    var ul = document.createElement('ul');
+    lightBoxWindow.appendChild(ul);
+    var closeButton = document.createElement('div');
+    closeButton.className = 'iframelightbox_closebutton';
+    lightBoxWindow.appendChild(closeButton);
+    var container = document.createElement('div');
+    container.className = 'iframelightbox_iframecontainer';
+    lightBoxWindow.appendChild(container);
 
-    var linkHandler = function linkHandler(e) {
-	if (iframe.src != this.href) { iframe.src = this.href; }
-	showLightBox();
-	return false;
+    frameTabs = [];
+    lightBoxAnchors = getElementsByClass(options.classname, 'a');
+    var hrefMatch = function hrefMatch(href, obj) {
+	return (obj.url == href);
     }
-
+    var newTab = function newTab(anchor) {
+	var existing = arrayContains(anchor.href, hrefMatch);
+	if (! existing) {
+	    var iframe = document.createElement('iframe');
+	    if (options.preload) { iframe.src = anchor.href; }
+	    container.appendChild(iframe);
+	    var li = document.createElement('li');
+	    ul.appendChild(li);
+	    li.appendChild(document.createTextNode(anchor.textContent ? anchor.textContent : anchor.innerText));
+	    existing = {
+		iframe: iframe,
+		li: li,
+		url: anchor.href,
+		activate: function(e) {
+		    if (e) { e.stopPropagation(); }
+		    if (window.event) { window.event.cancelBubble = true; }
+		    stripClasses(lightBoxContainer.getElementsByTagName('li'));
+		    stripClasses(lightBoxContainer.getElementsByTagName('iframe'));
+		    iframe.className = 'iframelightbox_current';
+		    li.className = 'iframelightbox_current';
+		    lightBoxContainer.style.display = 'block';
+		    return false;
+		}
+	    }
+	    li.onclick = existing.activate;
+	    frameTabs.push(existing);
+	}
+	anchor.onclick = existing.activate;
+    }
     for (var i = 0; i < lightBoxAnchors.length; i++) {
-	lightBoxAnchors[i].onclick = linkHandler;
+	newTab(lightBoxAnchors[i]);
     }
+
+    document.getElementsByTagName('body')[0].appendChild(lightBoxContainer);
 }
