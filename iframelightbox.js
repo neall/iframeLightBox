@@ -96,11 +96,12 @@ var lightBoxLinks = function lightBoxLinks(userOptions){
 		activate: function(e) {
 		    if (e) { e.stopPropagation(); }
 		    if (window.event) { window.event.cancelBubble = true; }
+		    if (iframe.src != anchor.href) { iframe.src = anchor.href; }
 		    stripClasses(lightBoxContainer.getElementsByTagName('li'));
 		    stripClasses(lightBoxContainer.getElementsByTagName('iframe'));
 		    iframe.className = 'iframelightbox_current';
 		    li.className = 'iframelightbox_current';
-		    lightBoxContainer.style.display = 'block';
+		    showLightBox();
 		    return false;
 		}
 	    }
