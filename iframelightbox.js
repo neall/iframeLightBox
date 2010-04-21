@@ -63,7 +63,6 @@ var lightBoxLinks = function lightBoxLinks(userOptions){
     lightBoxContainer = document.createElement('div');
     lightBoxContainer.className = 'iframelightbox';
     lightBoxContainer.onclick = hideLightBox;
-    lightBoxContainer.style.display = 'none'; // <- won't need this after I update CSS
     var lightBoxWindow = document.createElement('div');
     lightBoxWindow.className = 'iframelightbox_window';
     lightBoxContainer.appendChild(lightBoxWindow);
